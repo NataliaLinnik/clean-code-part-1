@@ -30,36 +30,30 @@ export default class csvReader {
 
         let convertedFile = this.convertCSVfile(csvFile);
 
-        // Extract all names
-            // ['Paul1', 'Paul2', 'Paul3']
-        // Extract all ages
-            // [17, 18, 19]
-        // Extract all cities 
-            // ['Stuttgart1', 'Stuttgart2', 'Stuttgart3']
+        let tableHeader = Object.keys(csvInput[0]);
+        // ['Name', 'Alter', 'Ort']
 
-        // Function that will create us string 1
-        // string1(object) {...} 
+        let deviderNumbers: number[] = [];
+        // [ 7, 5, 9 ]
 
-        // Function that will create us string 2, string 3
-        // string1(object) {...
+        tableHeader.forEach((header: string) => {
+            let numberOfStrings = this.stringLength(convertedFile.map((a:any) => a[header]));
+            if(numberOfStrings > header.length) {
+                deviderNumbers.push(numberOfStrings);
+            } else {
+                deviderNumbers.push(header.length);
+            };
+        })
 
-        // Function that will create us string 1
-        // string1(object) {...
+        // Create table header
+        let tableHeaderString = this.createTableHeader(tableHeader, deviderNumbers);
+        
+        // Create table data
+        let tableData = this.createTableData(tableHeader, convertedFile, deviderNumbers);
 
-        /*
-            Name |Age|City    |
-            -----+---+--------+ 
-            Peter|42 |New York|
-            Paul |57 |London  |
-            Mary |35 |Munich  |
-        */
+        let mergedData = tableHeaderString.concat(tableData);
 
-        const string1 = "+--------+-------+-----------+"
-        const string2 = "|Name    |Alter  |Ort        |"
-        const string3 = "|Paul    |17     |Stuttgart  |"
-        const string4 = "|        |       |           |"
-
-        return csvFile ? string1 + '\n' + string2 + '\n' + string1 + '\n'  + string3 + '\n' + string1 :  string1 + '\n' + string4 + '\n' + string1;
+        return mergedData;
     }
 
     convertCSVfile(csvFile: string) {
@@ -68,20 +62,56 @@ export default class csvReader {
             .pipe(csv())
             .on('data', (data:any) => results.push(data))
             .on('end', () => {
-                return results;
-                console.log("RESULTS: ",results);
+                // console.log("RESULTS: ",results);
             })
         }
 
         return csvInput;
     }
 
+    stringLength(arrayOfStrings:string[]) {
+        if(arrayOfStrings.length != 0) {
+            return Math.max(...(arrayOfStrings.map(el => el.toString().length)));
+        } else {
+            return 0;
+        }
+      }
+
+    createTableHeader(tableHeader: string[], deviderNumbers: number[]) {
+
+        let string1: string = "";
+        let string2: string = "";
+
+        for (let i = 0; i < tableHeader.length; i++) {
+            string1 += "" + tableHeader[i] + " ".repeat(deviderNumbers[i] - tableHeader[i].length) + "|";
+            string2 += "-".repeat(deviderNumbers[i]) + "+";
+        }
+
+        return [string1, string2]
+    }
+
+    createTableData(tableHeader: string[], convertedFile: object[], deviderNumbers: number[]) {
+        
+        let arrayOfStrings:string[] = [] 
+
+        for (let i = 0; i < convertedFile.length; i++) {
+
+            let createdString: string = "";
+            let extractedTableRow:any = convertedFile[i];
+            for (let j = 0; j < tableHeader.length; j++) {
+                let extractedHeaderName = tableHeader[j];
+                createdString += "" + extractedTableRow[extractedHeaderName] + " ".repeat(deviderNumbers[j] - extractedTableRow[extractedHeaderName].toString().length) + "|";
+            }
+
+            arrayOfStrings.push(createdString);
+        }
+
+        return arrayOfStrings
+    }
+
 }
 
 const reader = new csvReader();
 
-console.log("----- CSV file exists ----");
 console.log(reader.tabellieren(dataName));
-console.log("\n")
-console.log("----- CSV file does not exist ----");
-console.log(reader.tabellieren(""));
+

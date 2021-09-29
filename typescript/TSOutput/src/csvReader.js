@@ -6,9 +6,9 @@ var path = require('path');
 var results = [];
 var dataName = 'data.csv';
 var csvInput = [
-    { Name: 'Paul', Alter: 1, Ort: 'Stuttgart' },
-    { Name: 'Max', Alter: 18, Ort: 'München' },
-    { Name: 'Phillip', Alter: 19, Ort: 'Berlin' }
+    { Name: 'Paul', Alter: 1, Ort: 'Stuttgart', Surname: 'Musterman' },
+    { Name: 'Max', Alter: 18, Ort: 'München', Surname: 'Muster' },
+    { Name: 'Phillip', Alter: 19, Ort: 'Berlin', Surname: 'Test' }
 ];
 var csvInput2 = [
     "NAME; ALTER; ORT",
@@ -25,31 +25,28 @@ var csvReader = /** @class */ (function () {
     // If we had more time, perhaps we can consider a solution where we
     // will pass our file to csvReader.js app 
     csvReader.prototype.tabellieren = function (csvFile) {
+        var _this = this;
         var convertedFile = this.convertCSVfile(csvFile);
-        // Extract all names
-        // ['Paul1', 'Paul2', 'Paul3']
-        // Extract all ages
-        // [17, 18, 19]
-        // Extract all cities 
-        // ['Stuttgart1', 'Stuttgart2', 'Stuttgart3']
-        // Function that will create us string 1
-        // string1(object) {...} 
-        // Function that will create us string 2, string 3
-        // string1(object) {...
-        // Function that will create us string 1
-        // string1(object) {...
-        /*
-            Name |Age|City    |
-            -----+---+--------+
-            Peter|42 |New York|
-            Paul |57 |London  |
-            Mary |35 |Munich  |
-        */
-        var string1 = "+--------+-------+-----------+";
-        var string2 = "|Name    |Alter  |Ort        |";
-        var string3 = "|Paul    |17     |Stuttgart  |";
-        var string4 = "|        |       |           |";
-        return csvFile ? string1 + '\n' + string2 + '\n' + string1 + '\n' + string3 + '\n' + string1 : string1 + '\n' + string4 + '\n' + string1;
+        var tableHeader = Object.keys(csvInput[0]);
+        // ['Name', 'Alter', 'Ort']
+        var deviderNumbers = [];
+        // [ 7, 5, 9 ]
+        tableHeader.forEach(function (header) {
+            var numberOfStrings = _this.stringLength(convertedFile.map(function (a) { return a[header]; }));
+            if (numberOfStrings > header.length) {
+                deviderNumbers.push(numberOfStrings);
+            }
+            else {
+                deviderNumbers.push(header.length);
+            }
+            ;
+        });
+        // Create table header
+        var tableHeaderString = this.createTableHeader(tableHeader, deviderNumbers);
+        // Create table data
+        var tableData = this.createTableData(tableHeader, convertedFile, deviderNumbers);
+        var mergedData = tableHeaderString.concat(tableData);
+        return mergedData;
     };
     csvReader.prototype.convertCSVfile = function (csvFile) {
         if (csvFile) {
@@ -57,19 +54,44 @@ var csvReader = /** @class */ (function () {
                 .pipe(csv())
                 .on('data', function (data) { return results.push(data); })
                 .on('end', function () {
-                return results;
-                console.log("RESULTS: ", results);
+                // console.log("RESULTS: ",results);
             });
         }
         return csvInput;
+    };
+    csvReader.prototype.stringLength = function (arrayOfStrings) {
+        if (arrayOfStrings.length != 0) {
+            return Math.max.apply(Math, (arrayOfStrings.map(function (el) { return el.toString().length; })));
+        }
+        else {
+            return 0;
+        }
+    };
+    csvReader.prototype.createTableHeader = function (tableHeader, deviderNumbers) {
+        var string1 = "";
+        var string2 = "";
+        for (var i = 0; i < tableHeader.length; i++) {
+            string1 += "" + tableHeader[i] + " ".repeat(deviderNumbers[i] - tableHeader[i].length) + "|";
+            string2 += "-".repeat(deviderNumbers[i]) + "+";
+        }
+        return [string1, string2];
+    };
+    csvReader.prototype.createTableData = function (tableHeader, convertedFile, deviderNumbers) {
+        var arrayOfStrings = [];
+        for (var i = 0; i < convertedFile.length; i++) {
+            var createdString = "";
+            var extractedTableRow = convertedFile[i];
+            for (var j = 0; j < tableHeader.length; j++) {
+                var extractedHeaderName = tableHeader[j];
+                createdString += "" + extractedTableRow[extractedHeaderName] + " ".repeat(deviderNumbers[j] - extractedTableRow[extractedHeaderName].toString().length) + "|";
+            }
+            arrayOfStrings.push(createdString);
+        }
+        return arrayOfStrings;
     };
     return csvReader;
 }());
 exports.default = csvReader;
 var reader = new csvReader();
-console.log("----- CSV file exists ----");
 console.log(reader.tabellieren(dataName));
-console.log("\n");
-console.log("----- CSV file does not exist ----");
-console.log(reader.tabellieren(""));
 //# sourceMappingURL=csvReader.js.map

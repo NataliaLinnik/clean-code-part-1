@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var csvReader_1 = __importDefault(require("../src/csvReader"));
 // mocked data
 var csvInput = [
-    { Name: 'Paul', Alter: 1, Ort: 'Stuttgart' },
-    { Name: 'Max', Alter: 18, Ort: 'München' },
-    { Name: 'Phillip', Alter: 19, Ort: 'Berlin' }
+    { Name: 'Paul', Alter: 1, Ort: 'Stuttgart', Surname: 'Musterman' },
+    { Name: 'Max', Alter: 18, Ort: 'München', Surname: 'Musterman' },
+    { Name: 'Phillip', Alter: 19, Ort: 'Berlin', Surname: 'Musterman' }
 ];
 var tableOutput = [
     "NAME   |ALTER|ORT      |",
