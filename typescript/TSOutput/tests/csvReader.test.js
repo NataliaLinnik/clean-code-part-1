@@ -4,24 +4,29 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var csvReader_1 = __importDefault(require("../src/csvReader"));
-var string1 = "+--------+-------+-----------+";
-var string2 = "|Name    |Alter  |Ort        |";
-var string3 = "|Paul    |17     |Stuttgart  |";
-var string4 = "|        |       |           |";
 // mocked data
+var csvInput = [
+    { Name: 'Paul', Alter: 1, Ort: 'Stuttgart' },
+    { Name: 'Max', Alter: 18, Ort: 'München' },
+    { Name: 'Phillip', Alter: 19, Ort: 'Berlin' }
+];
+var tableOutput = [
+    "NAME   |ALTER|ORT      |",
+    "-------+-----+---------+",
+    "Paul   |1    |Stuttgart|",
+    "Max    |18   |München  |",
+    "Phillip|19   |Berlin   |"
+];
 var dataName = 'data.csv';
+var reader = new csvReader_1.default();
 describe('Tabelieren', function () {
-    it('Tabelieren_null_empty-table', function () {
-        var reader = new csvReader_1.default();
-        var result = reader.Tabelieren('');
-        var expectedResult = string1 + '\n' + string4 + '\n' + string1;
-        expect(result).toBe(expectedResult);
+    it('Convert CSV file to table', function () {
+        var result = reader.tabellieren(dataName);
+        expect(result).toBe(tableOutput);
     });
-    it('Tabelieren_data_table-with-data', function () {
-        var reader = new csvReader_1.default();
-        var result = reader.Tabelieren(dataName);
-        var expectedResult = string1 + '\n' + string2 + '\n' + string1 + '\n' + string3 + '\n' + string1;
-        expect(result).toBe(expectedResult);
+    it('Convert CSV file to array of objects', function () {
+        var result = reader.convertCSVfile(dataName);
+        expect(result).toBe(csvInput);
     });
 });
 //# sourceMappingURL=csvReader.test.js.map

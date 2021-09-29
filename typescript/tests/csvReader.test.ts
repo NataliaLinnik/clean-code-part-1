@@ -1,27 +1,32 @@
 import csvReader from '../src/csvReader';
 
-const string1 = "+--------+-------+-----------+"
-const string2 = "|Name    |Alter  |Ort        |"
-const string3 = "|Paul    |17     |Stuttgart  |"
-const string4 = "|        |       |           |"
-
 // mocked data
-const dataName = 'data.csv'
+const csvInput = [
+  {Name: 'Paul', Alter: 1, Ort: 'Stuttgart'},
+  {Name: 'Max', Alter: 18, Ort: 'München'},
+  {Name: 'Phillip', Alter: 19, Ort: 'Berlin'}
+]
 
+const tableOutput = [
+  "NAME   |ALTER|ORT      |",
+  "-------+-----+---------+",
+  "Paul   |1    |Stuttgart|",
+  "Max    |18   |München  |",
+  "Phillip|19   |Berlin   |"
+]
+
+const dataName = 'data.csv'
+const reader = new csvReader();
 describe('Tabelieren', function() {
 
-  it('Tabelieren_null_empty-table', function() {
-    let reader = new csvReader();
-    let result = reader.Tabelieren('');
-    let expectedResult = string1 + '\n' + string4 + '\n' + string1;
-    expect(result).toBe(expectedResult);
+  it('Convert CSV file to table', function() {
+    let result = reader.tabellieren(dataName);
+    expect(result).toBe(tableOutput);
   });
 
-  it('Tabelieren_data_table-with-data', function() {
-    let reader = new csvReader();
-    let result = reader.Tabelieren(dataName);
-    let expectedResult = string1 + '\n' + string2 + '\n' + string1 + '\n'  + string3 + '\n' + string1;
-    expect(result).toBe(expectedResult);
+  it('Convert CSV file to array of objects', function() {
+    let result = reader.convertCSVfile(dataName);
+    expect(result).toBe(csvInput);
   });
 
 });
