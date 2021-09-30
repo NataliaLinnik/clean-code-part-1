@@ -1,4 +1,23 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -40,6 +59,8 @@ var csv = require('csv-parser');
 var fs = require('fs');
 var path = require('path');
 var results = [];
+var tableHeaderString = [];
+var readline = __importStar(require("readline"));
 var dataName = 'data.csv';
 var csvInput = [
     { Name: 'Paul', Alter: 1, Ort: 'Stuttgart' },
@@ -62,7 +83,7 @@ var csvReader = /** @class */ (function () {
     // will pass our file to csvReader.js app 
     csvReader.prototype.tabellieren = function (csvFile) {
         return __awaiter(this, void 0, void 0, function () {
-            var convertedFile_1, tableHeader, deviderNumbers_1, tableHeaderString, tableData, mergedData, error_1;
+            var convertedFile_1, tableHeader, deviderNumbers_1, tableData, error_1;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -84,10 +105,10 @@ var csvReader = /** @class */ (function () {
                             }
                             ;
                         });
+                        // Create table header
                         tableHeaderString = this.createTableHeader(tableHeader, deviderNumbers_1);
                         tableData = this.createTableData(tableHeader, convertedFile_1, deviderNumbers_1);
-                        mergedData = tableHeaderString.concat(tableData);
-                        return [2 /*return*/, mergedData];
+                        return [2 /*return*/, tableData];
                     case 2:
                         error_1 = _a.sent();
                         console.error("testGetData: An error occurred: ");
@@ -105,11 +126,9 @@ var csvReader = /** @class */ (function () {
                     .on('data', function (data) { return results.push(data); })
                     .on('end', function () {
                     resolve(results);
-                    // console.log("RESULTS: ",results);
                 });
             });
         }
-        //return csvInput;
     };
     csvReader.prototype.stringLength = function (arrayOfStrings) {
         if (arrayOfStrings.length != 0) {
@@ -141,12 +160,71 @@ var csvReader = /** @class */ (function () {
         }
         return arrayOfStrings;
     };
+    csvReader.prototype.displayResults = function (result) {
+        console.log('\n');
+        console.log(tableHeaderString[0]);
+        console.log(tableHeaderString[1]);
+        for (var i = 0; i < result.length; i++) {
+            console.log(result[i]);
+        }
+        console.log(menu);
+    };
+    csvReader.prototype.splitArrayToChunks = function (array, parts) {
+        var copyArray = array.map(function (v) { return v; });
+        var result = [];
+        for (var i = parts; i > 0; i--) {
+            result.push(copyArray.splice(0, Math.ceil(copyArray.length / i)));
+        }
+        return result;
+    };
     return csvReader;
 }());
 exports.default = csvReader;
+var start = 0;
 var reader = new csvReader();
 var tabellieren = reader.tabellieren(dataName);
-tabellieren.then(function (result) {
-    console.log(result);
+var menu = "\nf)irst page, p)revious page, n)ext page, l)ast page, e)xit\n";
+console.log("\nPut your CSV file in the same folder where *.js is located. File name must be data.csv\n " + menu);
+var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    prompt: 'Enter your choice: '
+});
+rl.prompt();
+rl.on('line', function (line) {
+    tabellieren.then(function (result) {
+        var splittedResults = reader.splitArrayToChunks(result, result.length / 3);
+        if (result) {
+            switch (line.trim()) {
+                case 'f':
+                    start = 0;
+                    reader.displayResults(splittedResults[start]);
+                    break;
+                case 'p':
+                    start = (start - 1) != -1 ? start - 1 : 0;
+                    reader.displayResults(splittedResults[start]);
+                    break;
+                case 'n':
+                    start = start + 1 != splittedResults.length ? start + 1 : splittedResults.length - 1;
+                    reader.displayResults(splittedResults[start]);
+                    break;
+                case 'l':
+                    start = splittedResults.length - 1;
+                    reader.displayResults(splittedResults[start]);
+                    break;
+                case 'e':
+                    rl.close();
+                    break;
+                default:
+                    console.log("We dont recognize '" + line.trim() + "' command");
+                    console.log(menu);
+                    break;
+            }
+            rl.prompt();
+        }
+    });
+}).on('close', function () {
+    console.log('Have a great day!');
+    process.exit(0);
 });
 //# sourceMappingURL=csvReader.js.map
