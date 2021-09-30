@@ -19,13 +19,13 @@ const dataName = 'data.csv'
 const reader = new csvReader();
 describe('Tabelieren', function() {
 
-  it('Convert CSV file to table', function() {
-    let result = reader.tabellieren(dataName);
+  it('Convert CSV file to table', async function() {
+    let result = await reader.tabellieren(dataName);
     expect(result).toBe(tableOutput);
   });
 
-  it('Convert CSV file to array of objects', function() {
-    let result = reader.convertCSVfile(dataName);
+  it('Convert CSV file to array of objects', async function() {
+    let result = await reader.convertCSVfile(dataName);
     expect(result).toBe(csvInput);
   });
 

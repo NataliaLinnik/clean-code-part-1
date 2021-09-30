@@ -26,47 +26,54 @@ export default class csvReader {
     // If we had more time, perhaps we can consider a solution where we
     // will pass our file to csvReader.js app 
 
-    tabellieren(csvFile: string) {
+    async tabellieren(csvFile: string) {
+        try {
+            let convertedFile:any = await this.convertCSVfile(csvFile);
 
-        let convertedFile = this.convertCSVfile(csvFile);
+            let tableHeader = Object.keys(convertedFile[0]);
+            // ['Name', 'Alter', 'Ort']
+    
+            let deviderNumbers: number[] = [];
+            // [ 7, 5, 9 ]
+    
+            tableHeader.forEach((header: string) => {
+                let numberOfStrings = this.stringLength(convertedFile.map((a:any) => a[header]));
+                if(numberOfStrings > header.length) {
+                    deviderNumbers.push(numberOfStrings);
+                } else {
+                    deviderNumbers.push(header.length);
+                };
+            })
+    
+            // Create table header
+            let tableHeaderString = this.createTableHeader(tableHeader, deviderNumbers);
+            
+            // Create table data
+            let tableData = this.createTableData(tableHeader, convertedFile, deviderNumbers);
+    
+            let mergedData = tableHeaderString.concat(tableData);
 
-        let tableHeader = Object.keys(csvInput[0]);
-        // ['Name', 'Alter', 'Ort']
+            return mergedData;
+        }catch (error) {
+            console.error("testGetData: An error occurred: ");
+        }
 
-        let deviderNumbers: number[] = [];
-        // [ 7, 5, 9 ]
-
-        tableHeader.forEach((header: string) => {
-            let numberOfStrings = this.stringLength(convertedFile.map((a:any) => a[header]));
-            if(numberOfStrings > header.length) {
-                deviderNumbers.push(numberOfStrings);
-            } else {
-                deviderNumbers.push(header.length);
-            };
-        })
-
-        // Create table header
-        let tableHeaderString = this.createTableHeader(tableHeader, deviderNumbers);
-        
-        // Create table data
-        let tableData = this.createTableData(tableHeader, convertedFile, deviderNumbers);
-
-        let mergedData = tableHeaderString.concat(tableData);
-
-        return mergedData;
     }
 
     convertCSVfile(csvFile: string) {
         if(csvFile){
+            return new Promise((resolve, reject) => {
             fs.createReadStream(path.join(__dirname, csvFile))
             .pipe(csv())
             .on('data', (data:any) => results.push(data))
             .on('end', () => {
+                resolve(results);
                 // console.log("RESULTS: ",results);
             })
+            });
         }
 
-        return csvInput;
+        //return csvInput;
     }
 
     stringLength(arrayOfStrings:string[]) {
@@ -113,5 +120,11 @@ export default class csvReader {
 
 const reader = new csvReader();
 
-console.log(reader.tabellieren(dataName));
+let tabellieren = reader.tabellieren(dataName);
+
+
+tabellieren.then(function(result) {
+   console.log(result);
+})
+
 
